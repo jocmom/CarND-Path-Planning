@@ -238,7 +238,7 @@ int main() {
 					
 						int prev_size = previous_path_x.size();
 						// reference speed
-						const double ref_v = 49.5;
+						const double ref_v = REF_V;
 						const double max_jerk = 0.224;
 						int lane = 1;
 						vector<double> next_x_vals;
