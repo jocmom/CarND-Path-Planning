@@ -8,6 +8,7 @@
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
+#include "constants.h"
 #include "spline.h"
 #include "Obstacle.h"
 
@@ -234,11 +235,8 @@ int main() {
 
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
           	auto sensor_fusion = j[1]["sensor_fusion"];
-					
 						int prev_size = previous_path_x.size();
 						// reference speed
-						const double ref_v = 49.5;
-						const double max_jerk = 0.224;
 						int lane = 1;
 						vector<double> ptsx;
 						vector<double> ptsy;
