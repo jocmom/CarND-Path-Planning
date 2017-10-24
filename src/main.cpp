@@ -297,6 +297,35 @@ int main() {
 									next_y_vals.push_back(previous_path_y[i]);
 						}
 
+						// Calculate how to break up spline points to travel with reference velocity
+						double target_x = 30.0;
+						double target_y = s(target_x);
+						double target_dist = sqrt((target_x*target_x) + (target_y*target_y));
+						
+						double x_add_on = 0;
+						for(int i = 1; i <= PATH_POINTS_CNT - prev_size; i++)
+						{
+							double N = ( target_dist / ( DELTA_T * REF_V /2.24));
+							double x_point = x_add_on + (target_x / N);
+							double y_point = s(x_point);
+			
+							x_add_on = x_point;
+			
+							double x_ref = x_point;
+							double y_ref = y_point;
+			
+							// transformation back to map coordinate frame
+							x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
+							y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+			
+							x_point += ref_x;
+							y_point += ref_y;
+			
+							next_x_vals.push_back(x_point);
+							next_y_vals.push_back(y_point);
+						}
+
+
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
           	json msgJson;
           	msgJson["next_x"] = next_x_vals;
