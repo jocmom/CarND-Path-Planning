@@ -5,7 +5,7 @@
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/path_planing"
+            "program": "${workspaceRoot}/build/path_planing",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceRoot}",
