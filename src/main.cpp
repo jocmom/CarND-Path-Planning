@@ -236,23 +236,71 @@ int main() {
           	auto sensor_fusion = j[1]["sensor_fusion"];
 					
 						int prev_size = previous_path_x.size();
+						// reference speed
+						const double ref_v = 49.5;
+						const double max_jerk = 0.224;
+						int lane = 1;
+						vector<double> ptsx;
+						vector<double> ptsy;
 					
 						if(prev_size > 0) {
 							car_s = end_path_s;						
 						}
 
-          	json msgJson;
+						// Use two points that make the tangent to current car position
+						double ref_x = car_x;
+						double ref_y = car_y;
+						double ref_x_prev = car_x - cos(car_yaw);
+						double ref_y_prev = car_y - sin(car_yaw);
+						double ref_yaw = deg2rad(car_yaw);
+						// Use two points that make the tangent from the last points 
+						// of previous path
+						if(prev_size > 2) {
+							ref_x = previous_path_x[prev_size-1];
+							ref_x_prev = previous_path_x[prev_size-2];
+							ref_y = previous_path_y[prev_size-1];
+							ref_y_prev = previous_path_y[prev_size-2];
+							ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+						}
+						// In Frenet add evenly 30m spaced points ahead of the current position						
+						vector<double> next_wp0 = getXY(car_s+30, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+						vector<double> next_wp1 = getXY(car_s+60, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+						vector<double> next_wp2 = getXY(car_s+90, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+
+						ptsx.push_back(ref_x_prev);
+						ptsx.push_back(ref_x);
+						ptsx.push_back(next_wp0[0]);
+						ptsx.push_back(next_wp1[0]);
+						ptsx.push_back(next_wp2[0]);
+						ptsy.push_back(ref_y_prev);
+						ptsy.push_back(ref_y);
+						ptsy.push_back(next_wp0[1]);
+						ptsy.push_back(next_wp1[1]);
+						ptsy.push_back(next_wp2[1]);
+
+						// transformation to car's reference frame
+						for(int i=0; i<ptsx.size(); i++)
+						{
+							double shift_x = ptsx[0] - ref_x;
+							double shift_y = ptsy[0] - ref_y;
+							ptsx[i] = (shift_x * cos(0-ref_yaw) - shift_y * sin(0-ref_yaw));
+							ptsy[i] = (shift_x * sin(0-ref_yaw) - shift_y * cos(0-ref_yaw));
+						}
+						// create spline
+						tk::spline s;
+						s.set_points(ptsx, ptsy);
 
           	vector<double> next_x_vals;
-          	vector<double> next_y_vals;
-						double dist_inc = 0.5;
-						for(int i = 0; i < 50; i++)
+						vector<double> next_y_vals;
+						// get all points left from the previous path not eaten by the car
+						for(int i = 0; i < previous_path_x.size(); i++)
 						{
-									next_x_vals.push_back(car_x+(dist_inc*i)*cos(deg2rad(car_yaw)));
-									next_y_vals.push_back(car_y+(dist_inc*i)*sin(deg2rad(car_yaw)));
+									next_x_vals.push_back(previous_path_x[i]);
+									next_y_vals.push_back(previous_path_y[i]);
 						}
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+          	json msgJson;
           	msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
 
