@@ -236,12 +236,35 @@ int main() {
           	auto sensor_fusion = j[1]["sensor_fusion"];
 					
 						int prev_size = previous_path_x.size();
+						// reference speed
+						const double ref_v = 49.5;
+						int lane = 1;
+						vector<double> ptsx;
+						vector<double> ptsy;
 					
 						if(prev_size > 0) {
 							car_s = end_path_s;						
 						}
 
-          	json msgJson;
+						// Use two points that make the tangent to current car position
+						double ref_x = car_x;
+						double ref_y = car_y;
+						double ref_x_prev = car_x - cos(car_yaw);
+						double ref_y_prev = car_y - sin(car_yaw);
+						double ref_yaw = deg2rad(car_yaw);
+						// Use two points that make the tangent from the last points 
+						// of previous path
+						if(prev_size > 2) {
+							ref_x = previous_path_x[prev_size-1];
+							ref_x_prev = previous_path_x[prev_size-2];
+							ref_y = previous_path_y[prev_size-1];
+							ref_y_prev = previous_path_y[prev_size-2];
+							ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+						}
+						ptsx.push_back(ref_x_prev);
+						ptsx.push_back(ref_x);
+						ptsy.push_back(ref_y_prev);
+						ptsy.push_back(ref_y);
 
           	vector<double> next_x_vals;
           	vector<double> next_y_vals;
@@ -253,6 +276,7 @@ int main() {
 						}
 
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+          	json msgJson;
           	msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
 
