@@ -241,12 +241,14 @@ int main() {
 						const double ref_v = 49.5;
 						const double max_jerk = 0.224;
 						int lane = 1;
+						vector<double> next_x_vals;
+						vector<double> next_y_vals;
 						vector<double> ptsx;
 						vector<double> ptsy;
 					
-						if(prev_size > 0) {
-							car_s = end_path_s;						
-						}
+						// if(prev_size > 0) {
+						// 	car_s = end_path_s;						
+						// }
 
 						// Use two points that make the tangent to current car position
 						double ref_x = car_x;
@@ -274,6 +276,7 @@ int main() {
 						ptsx.push_back(next_wp0[0]);
 						ptsx.push_back(next_wp1[0]);
 						ptsx.push_back(next_wp2[0]);
+
 						ptsy.push_back(ref_y_prev);
 						ptsy.push_back(ref_y);
 						ptsy.push_back(next_wp0[1]);
@@ -285,15 +288,13 @@ int main() {
 						{
 							double shift_x = ptsx[i] - ref_x;
 							double shift_y = ptsy[i] - ref_y;
-							ptsx[i] = (shift_x * cos(0-ref_yaw) - shift_y * sin(0-ref_yaw));
-							ptsy[i] = (shift_x * sin(0-ref_yaw) - shift_y * cos(0-ref_yaw));
+							ptsx[i] = (shift_x * cos(0 - ref_yaw) - shift_y*sin(0 - ref_yaw));
+							ptsy[i] = (shift_x * sin(0 - ref_yaw) + shift_y*cos(0 - ref_yaw));
 						}
 						// create spline
 						tk::spline s;
 						s.set_points(ptsx, ptsy);
 
-          	vector<double> next_x_vals;
-						vector<double> next_y_vals;
 						// get all points left from the previous path not eaten by the car
 						for(int i = 0; i < prev_size; i++)
 						{
