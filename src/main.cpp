@@ -8,6 +8,7 @@
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
+#include "constants.h"
 #include "spline.h"
 #include "Obstacle.h"
 
@@ -250,12 +251,13 @@ int main() {
 						// Use two points that make the tangent to current car position
 						double ref_x = car_x;
 						double ref_y = car_y;
-						double ref_x_prev = car_x - cos(car_yaw);
-						double ref_y_prev = car_y - sin(car_yaw);
 						double ref_yaw = deg2rad(car_yaw);
+						double ref_x_prev = car_x - cos(ref_yaw);
+						double ref_y_prev = car_y - sin(ref_yaw);
 						// Use two points that make the tangent from the last points 
 						// of previous path
-						if(prev_size > 2) {
+						if(prev_size >= 2) {
+							cout << "Got previous path with length: " << prev_size <<endl;
 							ref_x = previous_path_x[prev_size-1];
 							ref_x_prev = previous_path_x[prev_size-2];
 							ref_y = previous_path_y[prev_size-1];
@@ -281,8 +283,8 @@ int main() {
 						// transformation to car's reference frame
 						for(int i=0; i<ptsx.size(); i++)
 						{
-							double shift_x = ptsx[0] - ref_x;
-							double shift_y = ptsy[0] - ref_y;
+							double shift_x = ptsx[i] - ref_x;
+							double shift_y = ptsy[i] - ref_y;
 							ptsx[i] = (shift_x * cos(0-ref_yaw) - shift_y * sin(0-ref_yaw));
 							ptsy[i] = (shift_x * sin(0-ref_yaw) - shift_y * cos(0-ref_yaw));
 						}
@@ -293,12 +295,39 @@ int main() {
           	vector<double> next_x_vals;
 						vector<double> next_y_vals;
 						// get all points left from the previous path not eaten by the car
-						for(int i = 0; i < previous_path_x.size(); i++)
+						for(int i = 0; i < prev_size; i++)
 						{
 									next_x_vals.push_back(previous_path_x[i]);
 									next_y_vals.push_back(previous_path_y[i]);
 						}
+						//Calculate how to break up spline points so that we travel at our desired reference velocity
+						double target_x = 30.0;
+						double target_y = s(target_x); //apply spline
+						double target_dist = sqrt((target_x * target_x) + target_y * target_y);
+						double x_add_on = 0;
+			
+						//Spline points after previous points
+						for(int i = 1; i <= PATH_POINTS_CNT - prev_size; i++)
+						{
+							// Use points with minimum jerk
+							double N = ( target_dist / ( DELTA_T * REF_V /2.24));
+							double x_point = x_add_on + (target_x / N);
+							double y_point = s(x_point);
+			
+							x_add_on = x_point;
+							double x_ref = x_point;
+							double y_ref = y_point;
+			
+							// transform back to original frame
+							x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
+							y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+							x_point += ref_x;
+							y_point += ref_y;
 
+							// push them on current path vector			
+							next_x_vals.push_back(x_point);
+							next_y_vals.push_back(y_point);
+						}
           	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
           	json msgJson;
           	msgJson["next_x"] = next_x_vals;
