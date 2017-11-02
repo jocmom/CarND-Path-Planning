@@ -10,7 +10,7 @@
 #include "json.hpp"
 #include "constants.h"
 #include "spline.h"
-#include "Obstacle.h"
+#include "Vehicle.h"
 
 using namespace std;
 
@@ -246,9 +246,9 @@ int main() {
 						vector<double> ptsx;
 						vector<double> ptsy;
 					
-						// if(prev_size > 0) {
-						// 	car_s = end_path_s;						
-						// }
+						if(prev_size > 0) {
+							car_s = end_path_s;						
+						}
 
 						// Use two points that make the tangent to current car position
 						double ref_x = car_x;
