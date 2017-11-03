@@ -1,13 +1,21 @@
-#ifndef __BehaviorPlanner_h__
-#define __BehaviorPlanner_h__
+#ifndef __PathPlanner_h__
+#define __PathPlanner_h__
 
-class BehaviorPlanner
+#include <vector>
+#include "Vehicle.h"
+
+class PathPlanner
 {
 public:
-  BehaviorPlanner();
-  ~BehaviorPlanner();
-private:
-  
-};
+  PathPlanner(Vehicle car);
+  ~PathPlanner();
+  void update();
+  void generatePath(); 
 
-#endif // __BehaviorPlanner_h__
+ private:
+  std::vector<double> x_path;
+  std::vector<double> y_path;
+  Vehicle car;
+
+}; 
+#endif // __PathPlanner_h__
