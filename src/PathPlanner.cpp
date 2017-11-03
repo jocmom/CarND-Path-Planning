@@ -12,6 +12,7 @@ PathPlanner::PathPlanner(Vehicle car)
 
 void PathPlanner::generatePath()
 {
+  int prev_size = previous_path_x.size();
   // Use two points that make the tangent to current car position
   double ref_x = car.x();
   double ref_y = car.y();

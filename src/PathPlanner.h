@@ -15,6 +15,8 @@ public:
  private:
   std::vector<double> x_path;
   std::vector<double> y_path;
+  std::vector<double> previous_path_x;
+  std::vector<double> previous_path_y;
   Vehicle car;
 
 }; 
