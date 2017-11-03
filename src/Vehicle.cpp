@@ -9,12 +9,28 @@ id(id), x(x), y(y), vx(vx), vy(vy), s(s), d(d)
 {
 }
 
-int Vehicle::getLane()
+void Vehicle::updateLane()
 {
-  return (int) this->d / LANE_WIDTH;
+  this->_lane = (int) this->d / LANE_WIDTH;
 }
 
-double Vehicle::getVelocity()
+void Vehicle::updateVelocity()
 {
-  return sqrt(vx*vx + vy*vy);
+  this->_velocity sqrt(vx*vx + vy*vy);
+}
+
+void Vehicle::updateYaw()
+{
+  double yaw = atan2(vx, vy);
+  this->_yaw = abs(yaw) > 0.1 ? yaw : 0.0;
+}
+
+void Vehicle::update(double x, double y, double vx, double vy, double s, double d)
+{
+  this->_x = x;
+  this->_y = y;
+  this->_vx = vx;
+  this->_vy = vy;
+  this->_s = s;
+  this->_d = d;
 }
