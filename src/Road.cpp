@@ -2,6 +2,7 @@
 #include <fstream> 
 #include <sstream>
 #include "helper.h"
+#include <math.h>
 
 
 using namespace std;
@@ -78,7 +79,7 @@ int Road::NextWaypoint(double x, double y, double theta)
 
 	double heading = atan2( (map_y-y),(map_x-x) );
 
-	double angle = abs(theta-heading);
+	double angle = fabs(theta-heading);
 
 	if(angle > pi()/4)
 	{

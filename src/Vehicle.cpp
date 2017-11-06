@@ -1,8 +1,8 @@
+#include "Vehicle.h"
 #include "constants.h"
 #include "helper.h"
 #include <math.h>
-#include "Vehicle.h"
-
+  
 using namespace std;
 
 Vehicle::Vehicle(int id) : _id(id) {}; 
@@ -24,7 +24,7 @@ void Vehicle::updateVelocity()
 void Vehicle::updateYaw()
 {
   double yaw = atan2(_vx, _vy);
-  this->_yaw = abs(yaw) > 0.1 ? yaw : 0.0;
+  this->_yaw = fabs(yaw) > 0.1 ? yaw : 0.0;
 }
 
 void Vehicle::update(double x, double y, double vel, double s, double d)
