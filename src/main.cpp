@@ -10,9 +10,10 @@
 #include "json.hpp"
 #include "constants.h"
 #include "spline.h"
+#include "helper.h"
+#include "Road.h"
 #include "Vehicle.h"
 #include "PathPlanner.h"
-#include "helper.h"
 
 using namespace std;
 
@@ -166,7 +167,9 @@ int main() {
   vector<double> map_waypoints_dy;
 
   // Waypoint map to read from
-  string map_file_ = "../data/highway_map.csv";
+	string map_file_ = "../data/highway_map.csv";
+	Road road(map_file_);
+	PathPlanner planner(road);
   // The max s value before wrapping around the track back to 0
   double max_s = 6945.554;
 
@@ -190,9 +193,9 @@ int main() {
   	map_waypoints_s.push_back(s);
   	map_waypoints_dx.push_back(d_x);
   	map_waypoints_dy.push_back(d_y);
-  }
+	}
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&road](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -227,7 +230,10 @@ int main() {
           	double end_path_d = j[1]["end_path_d"];
 
           	// Sensor Fusion Data, a list of all other cars on the same side of the road.
-          	auto sensor_fusion = j[1]["sensor_fusion"];
+						auto sensor_fusion = j[1]["sensor_fusion"];
+						
+						// Vehicle my_car(0, car_x, car_y, car_speed, car_s, car_d);
+						Vehicle my_car(-1);
 					
 						int prev_size = previous_path_x.size();
 						// reference speed
@@ -260,9 +266,9 @@ int main() {
 							ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
 						}
 						// In Frenet add evenly 30m spaced points ahead of the current position						
-						vector<double> next_wp0 = getXY(car_s+30, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-						vector<double> next_wp1 = getXY(car_s+60, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-						vector<double> next_wp2 = getXY(car_s+90, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+						vector<double> next_wp0 = road.getXY(car_s+30, (2+4*lane));
+						vector<double> next_wp1 = road.getXY(car_s+60, (2+4*lane));
+						vector<double> next_wp2 = road.getXY(car_s+90, (2+4*lane));
 
 						ptsx.push_back(ref_x_prev);
 						ptsx.push_back(ref_x);
