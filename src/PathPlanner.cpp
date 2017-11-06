@@ -2,18 +2,28 @@
 #include <math.h>
 #include "PathPlanner.h"
 #include "helper.h"
+#include "constants.h"
+#include "spline.h"
 
 using namespace std;
 
-PathPlanner::PathPlanner(Vehicle car)
+PathPlanner::PathPlanner() : car(0)
 {
-  this->car = car;
+  road = Road();
+}
+
+PathPlanner::PathPlanner(Road r) : car(0), road(r)
+{
 }
 
 void PathPlanner::generatePath()
 {
+  int lane = 1;
+  vector<double> ptsx;
+  vector<double> ptsy;
   int prev_size = previous_path_x.size();
   // Use two points that make the tangent to current car position
+  const double ref_v = REF_V;
   double ref_x = car.x();
   double ref_y = car.y();
   double ref_yaw = deg2rad(car.yaw());
@@ -30,9 +40,9 @@ void PathPlanner::generatePath()
     ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
   }
   // In Frenet add evenly 30m spaced points ahead of the current position						
-  vector<double> next_wp0 = getXY(car.s+30, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp1 = getXY(car.s+60, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp2 = getXY(car.s+90, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  vector<double> next_wp0 = road.getXY(car.s()+30, (2+4*lane));
+  vector<double> next_wp1 = road.getXY(car.s()+60, (2+4*lane));
+  vector<double> next_wp2 = road.getXY(car.s()+90, (2+4*lane));
   
   ptsx.push_back(ref_x_prev);
   ptsx.push_back(ref_x);
@@ -61,8 +71,8 @@ void PathPlanner::generatePath()
   // get all points left from the previous path not eaten by the car
   for(int i = 0; i < prev_size; i++)
   {
-    next_x_vals.push_back(previous_path_x[i]);
-    next_y_vals.push_back(previous_path_y[i]);
+    _x_path.push_back(previous_path_x[i]);
+    _y_path.push_back(previous_path_y[i]);
   }
   //Calculate how to break up spline points so that we travel at our desired reference velocity
   double target_x = 30.0;
@@ -89,7 +99,7 @@ void PathPlanner::generatePath()
     y_point += ref_y;
     
     // push them on current path vector			
-    next_x_vals.push_back(x_point);
-    next_y_vals.push_back(y_point);
+    _x_path.push_back(x_point);
+    _y_path.push_back(y_point);
   }
 }
