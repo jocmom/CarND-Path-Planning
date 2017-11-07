@@ -44,6 +44,7 @@ void PathPlanner::update(json data)
   // Sensor Fusion Data, a list of all other cars on the same side of the road.
   auto sensor_fusion = data["sensor_fusion"];
   for(auto sensor:sensor_fusion) {
+    other_cars.push_back(Vehicle(sensor[0], sensor[1], sensor[2], sensor[3], sensor[4], sensor[5], sensor[6]));
     
   }
   this->generatePath();
