@@ -7,8 +7,12 @@ using namespace std;
 
 Vehicle::Vehicle(int id) : _id(id) {}; 
 
-Vehicle::Vehicle(int id, double x, double y, double vel, double s, double d)  
+Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, double d) :
+_id(id), _x(x), _y(y), _vx(vx), _vy(vy), _s(s), _d(d) 
 {
+  this->updateSpeed();
+  this->updateLane();
+  this->updateYaw();
 }
 
 void Vehicle::updateLane()

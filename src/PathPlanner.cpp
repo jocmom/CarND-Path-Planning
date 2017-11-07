@@ -43,6 +43,9 @@ void PathPlanner::update(json data)
   
   // Sensor Fusion Data, a list of all other cars on the same side of the road.
   auto sensor_fusion = data["sensor_fusion"];
+  for(auto sensor:sensor_fusion) {
+    
+  }
   this->generatePath();
 }
 
@@ -55,6 +58,10 @@ void PathPlanner::generatePath()
   vector<double> ptsx;
   vector<double> ptsy;
   int prev_size = _x_path.size();
+  // use last point from previous path to smooth new path
+  if(prev_size > 0) {
+    car.s(end_path_s);
+  }
   // Use two points that make the tangent to current car position
   double ref_x = car.x();
   double ref_y = car.y();

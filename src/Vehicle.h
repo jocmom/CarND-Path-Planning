@@ -17,7 +17,7 @@ private:
 
 public:
   Vehicle(int id);
-  Vehicle(int id, double x, double y, double vel, double s, double d);
+  Vehicle(int id, double x, double y, double vx, double vy, double s, double d);
   int id() { return _id; };
   void id(int id) { _id = id; };
   double x() { return _x; };
