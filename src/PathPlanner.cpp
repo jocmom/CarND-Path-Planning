@@ -15,7 +15,7 @@ PathPlanner::PathPlanner() : car(-1)
 
 PathPlanner::PathPlanner(Road r) : car(-1), road(r)
 {
-}
+  }
 
 void PathPlanner::update(json data)
 {
@@ -32,6 +32,8 @@ void PathPlanner::update(json data)
   auto previous_path_y = data["previous_path_y"];
   // get all points left from the previous path not eaten by the car and
   // store them in current/next path
+  _x_path.clear();
+  _y_path.clear();
   for(int i = 0; i < previous_path_x.size(); i++)
   {
     _x_path.push_back(previous_path_x[i]);
