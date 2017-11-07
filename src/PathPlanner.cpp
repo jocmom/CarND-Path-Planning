@@ -47,12 +47,14 @@ void PathPlanner::update(json data)
 
 void PathPlanner::generatePath()
 {
+  // reference speed
+  const double ref_v = REF_V;
+  const double max_jerk = 0.224;
   int lane = 1;
   vector<double> ptsx;
   vector<double> ptsy;
   int prev_size = _x_path.size();
   // Use two points that make the tangent to current car position
-  const double ref_v = REF_V;
   double ref_x = car.x();
   double ref_y = car.y();
   double ref_yaw = deg2rad(car.yaw());
