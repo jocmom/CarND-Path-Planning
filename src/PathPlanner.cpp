@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <math.h>
 #include "PathPlanner.h"
 #include "helper.h"
@@ -16,12 +17,40 @@ PathPlanner::PathPlanner(Road r) : car(0), road(r)
 {
 }
 
+void PathPlanner::update(json data)
+{
+  this->car.x(data["x"]);
+  this->car.y(data["y"]);
+  this->car.s(data["s"]);
+  this->car.d(data["d"]);
+  this->car.yaw(data["yaw"]);
+  this->car.speed(data["speed"]);
+  
+  // Previous path data given to the Planner
+  auto previous_path_x = data["previous_path_x"];
+  auto previous_path_e = data["previous_path_y"];
+  // get all points left from the previous path not eaten by the car and
+  // store them in current/next path
+  for(int i = 0; i < previous_path_x.size(); i++)
+  {
+    _x_path.push_back(previous_path_x[i]);
+    _y_path.push_back(previous_path_y[i]);
+  }
+  // Previous path's end s and d values 
+  this->end_path_s = data["end_path_s"];
+  this->end_path_d = data["end_path_d"];
+  
+  // Sensor Fusion Data, a list of all other cars on the same side of the road.
+  auto sensor_fusion = data["sensor_fusion"];
+  this->generatePath();
+}
+
 void PathPlanner::generatePath()
 {
   int lane = 1;
   vector<double> ptsx;
   vector<double> ptsy;
-  int prev_size = previous_path_x.size();
+  int prev_size = _x_path.size();
   // Use two points that make the tangent to current car position
   const double ref_v = REF_V;
   double ref_x = car.x();
@@ -33,10 +62,10 @@ void PathPlanner::generatePath()
   // of previous path
   if(prev_size >= 2) {
     cout << "Got previous path with length: " << prev_size <<endl;
-    ref_x = previous_path_x[prev_size-1];
-    ref_x_prev = previous_path_x[prev_size-2];
-    ref_y = previous_path_y[prev_size-1];
-    ref_y_prev = previous_path_y[prev_size-2];
+    ref_x = _x_path[prev_size-1];
+    ref_x_prev = _x_path[prev_size-2];
+    ref_y = _y_path[prev_size-1];
+    ref_y_prev = _y_path[prev_size-2];
     ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
   }
   // In Frenet add evenly 30m spaced points ahead of the current position						
@@ -68,12 +97,6 @@ void PathPlanner::generatePath()
   tk::spline s;
   s.set_points(ptsx, ptsy);
   
-  // get all points left from the previous path not eaten by the car
-  for(int i = 0; i < prev_size; i++)
-  {
-    _x_path.push_back(previous_path_x[i]);
-    _y_path.push_back(previous_path_y[i]);
-  }
   //Calculate how to break up spline points so that we travel at our desired reference velocity
   double target_x = 30.0;
   double target_y = s(target_x); //apply spline
