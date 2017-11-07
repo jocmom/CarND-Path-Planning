@@ -8,12 +8,12 @@
 
 using namespace std;
 
-PathPlanner::PathPlanner() : car(0)
+PathPlanner::PathPlanner() : car(-1)
 {
   road = Road();
 }
 
-PathPlanner::PathPlanner(Road r) : car(0), road(r)
+PathPlanner::PathPlanner(Road r) : car(-1), road(r)
 {
 }
 
@@ -25,10 +25,11 @@ void PathPlanner::update(json data)
   this->car.d(data["d"]);
   this->car.yaw(data["yaw"]);
   this->car.speed(data["speed"]);
-  
+  this->car.updateLane();
+    
   // Previous path data given to the Planner
   auto previous_path_x = data["previous_path_x"];
-  auto previous_path_e = data["previous_path_y"];
+  auto previous_path_y = data["previous_path_y"];
   // get all points left from the previous path not eaten by the car and
   // store them in current/next path
   for(int i = 0; i < previous_path_x.size(); i++)

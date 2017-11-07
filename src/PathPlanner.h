@@ -21,8 +21,6 @@ public:
  private:
   std::vector<double> _x_path;
   std::vector<double> _y_path;
-  std::vector<double> previous_path_x;
-  std::vector<double> previous_path_y;
   int prev_size;
   double end_path_s;
   double end_path_d;
