@@ -15,7 +15,7 @@ PathPlanner::PathPlanner() : car(-1)
 
 PathPlanner::PathPlanner(Road r) : car(-1), road(r)
 {
-  }
+}
 
 void PathPlanner::update(json data)
 {
@@ -26,7 +26,7 @@ void PathPlanner::update(json data)
   this->car.yaw(data["yaw"]);
   this->car.speed(data["speed"]);
   this->car.updateLane();
-    
+  
   // Previous path data given to the Planner
   auto previous_path_x = data["previous_path_x"];
   auto previous_path_y = data["previous_path_y"];
