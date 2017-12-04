@@ -41,6 +41,7 @@ public:
   void updateYaw();
   void updateLane();
   void updateSpeed();
+  double getDistance(double s);
 
 };
 
