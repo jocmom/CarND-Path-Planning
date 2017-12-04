@@ -7,8 +7,7 @@ using namespace std;
 
 Vehicle::Vehicle(int id) : _id(id) {}; 
 
-Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, double d) :
-_id(id), _x(x), _y(y), _vx(vx), _vy(vy), _s(s), _d(d) 
+Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, double d) : _id(id), _x(x), _y(y), _vx(vx), _vy(vy), _s(s), _d(d) 
 {
   this->updateSpeed();
   this->updateLane();
@@ -38,4 +37,16 @@ void Vehicle::update(double x, double y, double speed, double s, double d)
   this->_speed = speed;
   this->_s = s;
   this->_d = d;
+}
+/**
+ *
+ * @param s - S to get distance to
+ * @return Distance to S
+ */
+double Vehicle::getDistance(double s) 
+{
+  if (s < (this->_s - CAR_SIZE)) {
+      s += TRACK_SIZE;
+  }
+  return s - this->_s;
 }
