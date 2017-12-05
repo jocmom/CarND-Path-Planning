@@ -1,6 +1,7 @@
 #ifndef __VEHICLE_H__
 #define __VEHICLE_H__
 
+#include<vector>
 class Vehicle
 {
 private:
@@ -42,6 +43,7 @@ public:
   void updateLane();
   void updateSpeed();
   double getDistance(double s);
+  Vehicle* getClosestCar(std::vector<Vehicle> &vehicles, int lane);
 
 };
 

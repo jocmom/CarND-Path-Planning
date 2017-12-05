@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "helper.h"
 #include <math.h>
+#include <limits>
   
 using namespace std;
 
@@ -17,6 +18,7 @@ Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, dou
 void Vehicle::updateLane()
 {
   this->_lane = (int) this->_d / LANE_WIDTH;
+  // this->_lane = (int) floor(((this->d - LANE_WIDTH/2) / LANE_WIDTH + 0.5));
 }
 
 void Vehicle::updateSpeed()
@@ -49,4 +51,20 @@ double Vehicle::getDistance(double s)
       s += TRACK_SIZE;
   }
   return s - this->_s;
+}
+
+Vehicle* Vehicle::getClosestCar(vector<Vehicle> &vehicles, int lane)
+{
+  Vehicle* closest_car;
+  double distance = std::numeric_limits<double>::max();
+  for(auto &v:vehicles) {
+    if(lane == v.lane()) {
+      double next_car_distance = this->getDistance(v.s());
+      if(next_car_distance < distance) {
+        distance = next_car_distance;
+        closest_car = &v;
+      }
+    }
+  }
+  return closest_car;
 }
