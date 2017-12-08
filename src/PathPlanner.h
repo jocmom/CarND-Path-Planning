@@ -27,6 +27,7 @@ public:
   std::vector<Vehicle> other_cars;
   Vehicle car = Vehicle(-1);
   Road road;
+  double ref_v;
 
 }; 
 #endif // __PathPlanner_h__

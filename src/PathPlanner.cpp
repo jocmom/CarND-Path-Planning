@@ -55,7 +55,9 @@ void PathPlanner::update(json data)
   }
   // else, get best other lane
   else {
-    if(this->car.lane() >= LANE_CNT)
+    if(this->car.lane() >= LANE_CNT) {
+      
+    }
 
   }
 
@@ -65,7 +67,7 @@ void PathPlanner::update(json data)
 void PathPlanner::generatePath()
 {
   // reference speed
-  const double ref_v = REF_V;
+  this->ref_v = REF_V;
   const double max_jerk = 0.224;
   int lane = 1;
   vector<double> ptsx;
@@ -130,7 +132,7 @@ void PathPlanner::generatePath()
   for(int i = 1; i <= PATH_POINTS_CNT - prev_size; i++)
   {
     // Use points with minimum jerk
-    double N = ( target_dist / ( DELTA_T * REF_V /2.24));
+    double N = ( target_dist / ( DELTA_T * this->ref_v /2.24));
     double x_point = x_add_on + (target_x / N);
     double y_point = s(x_point);
     
