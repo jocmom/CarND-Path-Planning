@@ -53,18 +53,42 @@ double Vehicle::getDistance(double s)
   return s - this->_s;
 }
 
-Vehicle* Vehicle::getClosestCar(vector<Vehicle> &vehicles, int lane)
+vector<Vehicle*> Vehicle::getClosestCars(vector<Vehicle> &vehicles)
 {
-  Vehicle* closest_car;
-  double distance = std::numeric_limits<double>::max();
+  vector<double> closest_distances;
+  vector<Vehicle*> closest_cars;
+  for(int i=0; i<LANE_CNT; ++i) {
+    closest_distances.push_back(std::numeric_limits<double>::max());
+    closest_cars.push_back(nullptr);
+  }
   for(auto &v:vehicles) {
-    if(lane == v.lane()) {
-      double next_car_distance = this->getDistance(v.s());
-      if(next_car_distance < distance) {
-        distance = next_car_distance;
-        closest_car = &v;
+    for(int i=0; i<LANE_CNT; ++i) {
+      if(i==v.lane()) {
+        double next_car_distance = this->getDistance(v.s());
+        if(next_car_distance < closest_distances[i]) {
+          closest_distances[i] = next_car_distance;
+          closest_cars[i] = &v;
+        }
       }
     }
   }
-  return closest_car;
+  return closest_cars;
+  // Vehicle* closest_car = nullptr;
+  // // invalid lane
+  // if(lane < 0 || lane >= LANE_CNT) {
+  //   return nullptr;
+  // } 
+  // double distance = std::numeric_limits<double>::max();
+  // for(auto &v:vehicles) {
+  //   if(lane == v.lane()) {
+  //     double next_car_distance = this->getDistance(v.s());
+  //     if(next_car_distance < distance) {
+  //       distance = next_car_distance;
+  //       closest_car = &v;
+  //     }
+  //   }
+  // }
+  // return closest_car;
 }
+
+// double Vehicle::getDistanceToClosestCar(int lane)

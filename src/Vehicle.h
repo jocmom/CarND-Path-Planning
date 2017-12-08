@@ -43,7 +43,7 @@ public:
   void updateLane();
   void updateSpeed();
   double getDistance(double s);
-  Vehicle* getClosestCar(std::vector<Vehicle> &vehicles, int lane);
+  std::vector<Vehicle*> getClosestCars(std::vector<Vehicle> &vehicles);
 
 };
 

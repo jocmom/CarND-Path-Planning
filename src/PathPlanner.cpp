@@ -48,9 +48,17 @@ void PathPlanner::update(json data)
   for(auto sensor:sensor_fusion) {
     this->other_cars.push_back(Vehicle(sensor[0], sensor[1], sensor[2], sensor[3], sensor[4], sensor[5], sensor[6]));
   }
-  for(auto other_car:other_cars) {
+  vector<Vehicle*> closest_cars = this->car.getClosestCars(this->other_cars);
+  // Is current lane free go for it
+  if(this->car.getDistance(closest_cars[this->car.lane()]->s()) > MIN_DISTANCE) {
 
   }
+  // else, get best other lane
+  else {
+    if(this->car.lane() >= LANE_CNT)
+
+  }
+
   this->generatePath();
 }
 
