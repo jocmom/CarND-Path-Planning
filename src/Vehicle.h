@@ -42,6 +42,7 @@ public:
   void updateYaw();
   void updateLane();
   void updateSpeed();
+  double getFutureS(int path_size);
   double getDistance(double s);
   std::vector<Vehicle*> getClosestCars(std::vector<Vehicle> &vehicles);
 
