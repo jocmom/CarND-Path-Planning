@@ -17,8 +17,8 @@ Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, dou
 
 void Vehicle::updateLane()
 {
-  this->_lane = (int) this->_d / LANE_WIDTH;
-  // this->_lane = (int) floor(((this->d - LANE_WIDTH/2) / LANE_WIDTH + 0.5));
+  // this->_lane = (int) this->_d / LANE_WIDTH;
+  this->_lane = (int) floor(((this->_d - LANE_WIDTH/2) / LANE_WIDTH + 0.5));
 }
 
 void Vehicle::updateSpeed()
@@ -30,6 +30,11 @@ void Vehicle::updateYaw()
 {
   double yaw = atan2(_vx, _vy);
   this->_yaw = fabs(yaw) > 0.1 ? yaw : 0.0;
+}
+
+void Vehicle::getFutureS(int path_size)
+{
+  return path_size * DELTA_T * this->_speed;
 }
 
 void Vehicle::update(double x, double y, double speed, double s, double d)
