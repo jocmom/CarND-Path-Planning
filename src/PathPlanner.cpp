@@ -8,12 +8,12 @@
 
 using namespace std;
 
-PathPlanner::PathPlanner() : car(-1)
+PathPlanner::PathPlanner() : car(-1), ref_v(REF_V)
 {
   road = Road();
 }
 
-PathPlanner::PathPlanner(Road r) : car(-1), road(r)
+PathPlanner::PathPlanner(Road r) : car(-1), road(r), ref_v(REF_V)
 {
 }
 
@@ -34,7 +34,9 @@ void PathPlanner::update(json data)
   // store them in current/next path
   _x_path.clear();
   _y_path.clear();
-  for(int i = 0; i < previous_path_x.size(); i++)
+  
+  int prev_size = previous_path_x.size();
+  for(int i = 0; i < prev_size; i++)
   {
     _x_path.push_back(previous_path_x[i]);
     _y_path.push_back(previous_path_y[i]);
@@ -50,11 +52,14 @@ void PathPlanner::update(json data)
   }
   vector<Vehicle*> closest_cars = this->car.getClosestCars(this->other_cars);
   // Is current lane free go for it
-  if(this->car.getDistance(closest_cars[this->car.lane()]->s()) > MIN_DISTANCE) {
-
+  if(this->car.getDistance(closest_cars[this->car.lane()]->s()) < MIN_DISTANCE) {
+    cout << "Lane: " << car.lane() << " Distance: " << car.getDistance(closest_cars[this->car.lane()]->s()) << endl;
+    cout << "my s: " << car.s() << " other s: " << closest_cars[1]->s() << endl;
+    this->ref_v = 20.;
   }
   // else, get best other lane
   else {
+    this->ref_v = 40.;
     if(this->car.lane() >= LANE_CNT) {
       
     }
@@ -67,7 +72,6 @@ void PathPlanner::update(json data)
 void PathPlanner::generatePath()
 {
   // reference speed
-  this->ref_v = REF_V;
   const double max_jerk = 0.224;
   int lane = 1;
   vector<double> ptsx;
@@ -86,7 +90,7 @@ void PathPlanner::generatePath()
   // Use two points that make the tangent from the last points 
   // of previous path
   if(prev_size >= 2) {
-    cout << "Got previous path with length: " << prev_size <<endl;
+    // cout << "Got previous path with length: " << prev_size <<endl;
     ref_x = _x_path[prev_size-1];
     ref_x_prev = _x_path[prev_size-2];
     ref_y = _y_path[prev_size-1];
