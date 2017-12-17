@@ -8,12 +8,12 @@
 
 using namespace std;
 
-PathPlanner::PathPlanner() : car(-1), ref_v(REF_V)
+PathPlanner::PathPlanner() : car(-1), ref_v(0)
 {
   road = Road();
 }
 
-PathPlanner::PathPlanner(Road r) : car(-1), road(r), ref_v(REF_V)
+PathPlanner::PathPlanner(Road r) : car(-1), road(r), ref_v(0)
 {
 }
 
@@ -30,39 +30,57 @@ void PathPlanner::update(json data)
   // Previous path data given to the Planner
   auto previous_path_x = data["previous_path_x"];
   auto previous_path_y = data["previous_path_y"];
+  // Previous path's end s and d values 
+  this->end_path_s = data["end_path_s"];
+  this->end_path_d = data["end_path_d"];
+
+  int prev_size = previous_path_x.size();
+  // use last point from previous path to smooth new path
+  if(prev_size > 0) {
+    car.s(this->end_path_s);
+  }
   // get all points left from the previous path not eaten by the car and
   // store them in current/next path
   _x_path.clear();
   _y_path.clear();
-  
-  int prev_size = previous_path_x.size();
   for(int i = 0; i < prev_size; i++)
   {
     _x_path.push_back(previous_path_x[i]);
     _y_path.push_back(previous_path_y[i]);
   }
-  // Previous path's end s and d values 
-  this->end_path_s = data["end_path_s"];
-  this->end_path_d = data["end_path_d"];
   
   // Sensor Fusion Data, a list of all other cars on the same side of the road.
   auto sensor_fusion = data["sensor_fusion"];
+  this->other_cars.clear();
   for(auto sensor:sensor_fusion) {
     this->other_cars.push_back(Vehicle(sensor[0], sensor[1], sensor[2], sensor[3], sensor[4], sensor[5], sensor[6]));
   }
+  // for(auto &v:this->other_cars) 
+  // {
+  //   double future_s = v.getFutureS(prev_size);
+  //   if(v.lane() == car.lane() && future_s > car.s() && (future_s - car.s()) < 30)
+  //   {
+  //     cout << "My S: " << car.s() << " Future S: " << future_s << endl;
+  //     this->ref_v = 20.;
+  //   } 
+  // }
   vector<Vehicle*> closest_cars = this->car.getClosestCars(this->other_cars);
+  double distance = car.getDistance(closest_cars[this->car.lane()]->s());
   // Is current lane free go for it
-  if(this->car.getDistance(closest_cars[this->car.lane()]->s()) < MIN_DISTANCE) {
+  if(distance < MIN_DISTANCE) {
     cout << "Lane: " << car.lane() << " Distance: " << car.getDistance(closest_cars[this->car.lane()]->s()) << endl;
     cout << "my s: " << car.s() << " other s: " << closest_cars[1]->s() << endl;
-    this->ref_v = 20.;
+    this->ref_v -= MAX_V_DELTA * (1 - distance / MIN_DISTANCE);
   }
   // else, get best other lane
   else {
-    this->ref_v = 40.;
+    this->ref_v += MAX_V_DELTA;
     if(this->car.lane() >= LANE_CNT) {
       
     }
+  
+  if(this->ref_v > REF_V) this->ref_v = REF_V;
+  if(this->ref_v < 0) this->ref_v = 0;
 
   }
 
@@ -72,15 +90,10 @@ void PathPlanner::update(json data)
 void PathPlanner::generatePath()
 {
   // reference speed
-  const double max_jerk = 0.224;
   int lane = 1;
   vector<double> ptsx;
   vector<double> ptsy;
   int prev_size = _x_path.size();
-  // use last point from previous path to smooth new path
-  if(prev_size > 0) {
-    car.s(end_path_s);
-  }
   // Use two points that make the tangent to current car position
   double ref_x = car.x();
   double ref_y = car.y();
