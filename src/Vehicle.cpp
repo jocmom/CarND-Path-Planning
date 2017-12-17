@@ -18,7 +18,10 @@ Vehicle::Vehicle(int id, double x, double y, double vx, double vy, double s, dou
 void Vehicle::updateLane()
 {
   // this->_lane = (int) this->_d / LANE_WIDTH;
-  this->_lane = (int) floor(((this->_d - LANE_WIDTH/2) / LANE_WIDTH + 0.5));
+  // this->_lane = (int) floor(((this->_d - LANE_WIDTH/2) / LANE_WIDTH + 0.5));
+  if (_d > 0 && _d < 4) _lane =  0;
+  else if (_d > 4 && _d < 8) _lane = 1;
+  else _lane = 2;
 }
 
 void Vehicle::updateSpeed()
@@ -32,9 +35,9 @@ void Vehicle::updateYaw()
   this->_yaw = fabs(yaw) > 0.1 ? yaw : 0.0;
 }
 
-void Vehicle::getFutureS(int path_size)
+double Vehicle::getFutureS(int path_size)
 {
-  return path_size * DELTA_T * this->_speed;
+  return (this->_s + path_size * DELTA_T * this->_speed);
 }
 
 void Vehicle::update(double x, double y, double speed, double s, double d)
@@ -95,5 +98,3 @@ vector<Vehicle*> Vehicle::getClosestCars(vector<Vehicle> &vehicles)
   // }
   // return closest_car;
 }
-
-// double Vehicle::getDistanceToClosestCar(int lane)
