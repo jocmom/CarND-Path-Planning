@@ -61,13 +61,13 @@ double Vehicle::getDistance(double s)
   return s - this->_s;
 }
 
-vector<Vehicle*> Vehicle::getClosestCars(vector<Vehicle> &vehicles)
+vector<Vehicle> Vehicle::getClosestCars(vector<Vehicle> &vehicles)
 {
   vector<double> closest_distances;
-  vector<Vehicle*> closest_cars;
+  vector<Vehicle> closest_cars;
   for(int i=0; i<LANE_CNT; ++i) {
     closest_distances.push_back(std::numeric_limits<double>::max());
-    closest_cars.push_back(nullptr);
+    closest_cars.push_back(Vehicle(0));
   }
   for(auto &v:vehicles) {
     for(int i=0; i<LANE_CNT; ++i) {
@@ -75,7 +75,7 @@ vector<Vehicle*> Vehicle::getClosestCars(vector<Vehicle> &vehicles)
         double next_car_distance = this->getDistance(v.s());
         if(next_car_distance < closest_distances[i]) {
           closest_distances[i] = next_car_distance;
-          closest_cars[i] = &v;
+          closest_cars[i] = v;
         }
       }
     }

@@ -19,32 +19,32 @@ private:
 public:
   Vehicle(int id);
   Vehicle(int id, double x, double y, double vx, double vy, double s, double d);
-  int id() { return _id; };
+  int id() const { return _id; };
   void id(int id) { _id = id; };
-  double x() { return _x; };
+  double x() const { return _x; };
   void x(double x) { _x = x; };
-  double y() { return _y; };
+  double y() const { return _y; };
   void y(double y) { _y = y; };
-  double s() { return _s; };
+  double s() const { return _s; };
   void s(double s) { _s = s; };
-  double d() { return _d; };
+  double d() const { return _d; };
   void d(double d) { _d = d; };
-  double vx() { return _vx; };
+  double vx() const { return _vx; };
   void vx(double vx) { _vx = vx; };
-  double vy() { return _vy; };
+  double vy() const { return _vy; };
   void vy(double vy) { _vy= vy; };
-  double yaw() { return _yaw; };
+  double yaw() const { return _yaw; };
   void yaw(double yaw) { _yaw= yaw; };
-  double speed() { return _speed; };
+  double speed() const { return _speed; };
   void speed(double speed) { _speed= speed; };
-  int lane() { return _lane; };
+  int lane() const { return _lane; };
   void update(double x, double y, double speed, double s, double d);
   void updateYaw();
   void updateLane();
   void updateSpeed();
   double getFutureS(int path_size);
   double getDistance(double s);
-  std::vector<Vehicle*> getClosestCars(std::vector<Vehicle> &vehicles);
+  std::vector<Vehicle> getClosestCars(std::vector<Vehicle> &vehicles);
 
 };
 
