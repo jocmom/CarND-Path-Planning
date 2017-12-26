@@ -8,12 +8,12 @@
 
 using namespace std;
 
-PathPlanner::PathPlanner() : car(-1), ref_v(0)
+PathPlanner::PathPlanner() : car(-1), ref_v(0), costs(LANE_CNT, 0)
 {
   road = Road();
 }
 
-PathPlanner::PathPlanner(Road r) : car(-1), road(r), ref_v(0)
+PathPlanner::PathPlanner(Road r) : car(-1), road(r), ref_v(0), costs(LANE_CNT, 0)
 {
 }
 
@@ -49,27 +49,34 @@ void PathPlanner::update(json data)
     _y_path.push_back(previous_path_y[i]);
   }
   
+  bool too_close = false;
   // Sensor Fusion Data, a list of all other cars on the same side of the road.
   auto sensor_fusion = data["sensor_fusion"];
   this->other_cars.clear();
   for(auto sensor:sensor_fusion) {
-    this->other_cars.push_back(Vehicle(sensor[0], sensor[1], sensor[2], sensor[3], sensor[4], sensor[5], sensor[6]));
+    auto v = Vehicle(sensor[0], sensor[1], sensor[2], sensor[3], sensor[4], sensor[5], sensor[6]);
+    double future_s = v.getFutureS(prev_size);
+    this->other_cars.push_back(Vehicle(v));
+    this->costAll(v);
+    if (v.lane () == car.lane())
+    {
+      // other car in same lane and too close -> we have to slow down 
+      if(future_s > car.s() && future_s - car.s() < MIN_DISTANCE)
+      {
+        too_close = true;
+      }
+    }
   }
-  // for(auto &v:this->other_cars) 
-  // {
-  //   double future_s = v.getFutureS(prev_size);
-  //   if(v.lane() == car.lane() && future_s > car.s() && (future_s - car.s()) < 30)
-  //   {
-  //     cout << "My S: " << car.s() << " Future S: " << future_s << endl;
-  //     this->ref_v = 20.;
-  //   } 
-  // }
-  vector<Vehicle*> closest_cars = this->car.getClosestCars(this->other_cars);
-  double distance = car.getDistance(closest_cars[this->car.lane()]->s());
+  cout << "COSTS: " << costs[0] << " " << costs[1] << " " << costs[2] << endl;
+  std::fill(costs.begin(), costs.end(), 0);
+
+  vector<Vehicle> closest_cars = this->car.getClosestCars(this->other_cars);
+  double distance = car.getDistance(closest_cars[this->car.lane()].s());
+  // cout << "distance: " << closest_cars[1].s() << endl;
   // Is current lane free go for it
   if(distance < MIN_DISTANCE) {
-    cout << "Lane: " << car.lane() << " Distance: " << car.getDistance(closest_cars[this->car.lane()]->s()) << endl;
-    cout << "my s: " << car.s() << " other s: " << closest_cars[1]->s() << endl;
+    cout << "Lane: " << car.lane() << " Distance: " << car.getDistance(closest_cars[this->car.lane()].s()) << endl;
+    cout << "my s: " << car.s() << " other s: " << closest_cars[1].s() << endl;
     this->ref_v -= MAX_V_DELTA * (1 - distance / MIN_DISTANCE);
   }
   // else, get best other lane
@@ -77,20 +84,19 @@ void PathPlanner::update(json data)
     this->ref_v += MAX_V_DELTA;
     if(this->car.lane() >= LANE_CNT) {
       
-    }
-  
+  }
+  // clamp speed  
   if(this->ref_v > REF_V) this->ref_v = REF_V;
   if(this->ref_v < 0) this->ref_v = 0;
 
   }
 
-  this->generatePath();
+  this->generatePath(1);
 }
 
-void PathPlanner::generatePath()
+void PathPlanner::generatePath(int lane)
 {
   // reference speed
-  int lane = 1;
   vector<double> ptsx;
   vector<double> ptsy;
   int prev_size = _x_path.size();
@@ -168,3 +174,35 @@ void PathPlanner::generatePath()
     _y_path.push_back(y_point);
   }
 }
+
+double PathPlanner::costAll(const Vehicle &v) 
+{
+  int lane = v.lane();
+  if(lane > LANE_CNT) {
+    return 0.;
+  }
+
+  costs[lane] += costCollision(v);
+  return 0.;
+}
+
+double PathPlanner::costCollision(const Vehicle &v)
+{
+  if( v.s() - car.s() > -CAR_SIZE && v.s() - car.s() < MIN_DISTANCE) {
+    return 1.;
+  }
+  // if( v.lane() != car.lane() && (v.s() - car.s() < -CAR_SIZE) 
+  if( v.s() - car.s() < OPTIMAL_DISTANCE) {
+    return 0.3;
+  }
+  return 0.;
+}
+
+double PathPlanner::costLaneShift(const double lane) 
+{
+  if(lane == car.lane()) return 0.;
+  if(abs(lane - car.lane()) == 1) return 0.5;
+  return 1.;
+}
+
+// costSpeed, costCarsOnLaneCount
