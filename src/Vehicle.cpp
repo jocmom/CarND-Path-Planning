@@ -19,7 +19,7 @@ void Vehicle::updateLane()
 {
   // this->_lane = (int) this->_d / LANE_WIDTH;
   // this->_lane = (int) floor(((this->_d - LANE_WIDTH/2) / LANE_WIDTH + 0.5));
-  if (_d > 0 && _d < 4) _lane =  0;
+  if (_d >= 0 && _d < 4) _lane =  0;
   else if (_d > 4 && _d < 8) _lane = 1;
   else _lane = 2;
 }
