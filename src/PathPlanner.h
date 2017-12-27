@@ -21,7 +21,7 @@ public:
   void generatePath(int lane); 
   double costAll(const Vehicle& v);
   double costCollision(const Vehicle& v);
-  double costLaneShift(const double lane);
+  double costLaneShift(const int lane);
 
  private:
   std::vector<double> _x_path;
@@ -34,5 +34,6 @@ public:
   Road road;
   double ref_v;
   std::vector<double> costs;
+  std::vector<double> cost_weights;
 }; 
 #endif // __PathPlanner_h__
