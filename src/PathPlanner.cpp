@@ -214,9 +214,11 @@ void PathPlanner::costCollision(const Vehicle &v)
     else {
       costs[lane] += 1.;
       // and blocking car in mid lane -> increase costs
-      // for other outer lane
+      // for other outer lane because it's blocked by mid
       if(lane == 1) {
-        costs[(car.lane()+1)%LANE_CNT] += 1.;
+        if(car.lane() == 0) costs[2] += 1.;
+        if(car.lane() == 2) costs[0] += 1.;
+        // costs[(car.lane())%LANE_CNT] += 1.;
       }
     }
   }
@@ -244,4 +246,4 @@ int PathPlanner::bestLane()
   return target_lane;
 }
 
-// costSpeed, costCarsOnLaneCount, costPreferMidLane
+// costSpeed, costCarsOnLaneCount, costPreferMidLane, costDoubleLaneChange
