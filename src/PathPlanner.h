@@ -19,9 +19,10 @@ public:
   std::vector<double> y_path() { return _y_path; };
   void update(json data);
   void generatePath(int lane); 
-  double costAll(const Vehicle& v);
+  void costCars(const Vehicle& v);
   double costCollision(const Vehicle& v);
-  double costLaneShift(const int lane);
+  void costLaneShift();
+  int bestLane();
 
  private:
   std::vector<double> _x_path;

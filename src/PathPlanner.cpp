@@ -61,7 +61,7 @@ void PathPlanner::update(json data)
     double future_s = v.getFutureS(prev_size);
     v.s(future_s);
     this->other_cars.push_back(Vehicle(v));
-    this->costAll(v);
+    this->costCars(v);
     if (v.lane () == car.lane())
     {
       double distance = future_s - car.s();
@@ -79,14 +79,9 @@ void PathPlanner::update(json data)
       }
     }
   }
-  double best_cost = std::numeric_limits<double>::max();
-  for(int i=0; i<LANE_CNT; ++i) {
-    costs[i] += costLaneShift(i);
-    if(costs[i] < best_cost) {
-      best_cost = costs[i];
-      target_lane = i;
-    }
-  }
+  this->costLaneShift();
+  target_lane = this->bestLane();
+  
   cout << "COSTS: " << costs[0] << " " << costs[1] << " " << costs[2] << endl;
 
   // have to slow down
@@ -181,34 +176,58 @@ void PathPlanner::generatePath(int lane)
   }
 }
 
-double PathPlanner::costAll(const Vehicle &v) 
+void PathPlanner::costCars(const Vehicle &v) 
 {
   int lane = v.lane();
   if(lane > LANE_CNT) {
-    return 0.;
+    return;
   }
 
   costs[lane] += costCollision(v);
-  return 0.;
+  return;
 }
 
 double PathPlanner::costCollision(const Vehicle &v)
 {
-  if( v.s() - car.s() > -CAR_SIZE && v.s() - car.s() < MIN_DISTANCE) {
+  double distance = v.s() - car.s();
+  // cars behind car 
+  if( distance > -CAR_SIZE && distance < 0 ) {
+    if(v.lane() == car.lane()) {
+      return 0.1;
+    }
+    return 0.5;
+  }
+  // cars in front of car (near)
+  if( distance >= 0 && distance < MIN_DISTANCE ) {
     return 1.;
   }
-  // if( v.lane() != car.lane() && (v.s() - car.s() < -CAR_SIZE) 
-  if( v.s() > car.s() && v.s() - car.s() < OPTIMAL_DISTANCE) {
+  // cars in front of car (far)
+  if( distance >= 0 && distance < OPTIMAL_DISTANCE ) {
     return 0.3;
   }
   return 0.;
 }
 
-double PathPlanner::costLaneShift(const int lane) 
+void PathPlanner::costLaneShift() 
 {
-  if(lane == car.lane()) return 0.;
-  if(abs(lane - car.lane()) == 1) return 0.5;
-  return 1.;
+  for(int lane=0; lane<LANE_CNT; ++lane) {
+    if(lane == car.lane()) costs[lane] += 0.;
+    else if(abs(lane - car.lane()) == 1) costs[lane] += 0.5;
+    else costs[lane] += 1.;
+  }
+}
+
+int PathPlanner::bestLane()
+{
+  double best_cost = std::numeric_limits<double>::max();
+  double target_lane = 0;
+  for(int i=0; i<LANE_CNT; ++i) {
+    if(costs[i] < best_cost) {
+      best_cost = costs[i];
+      target_lane = i;
+    }
+  }
+  return target_lane;
 }
 
 // costSpeed, costCarsOnLaneCount
