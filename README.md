@@ -1,11 +1,58 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
    
-### Simulator.
-You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
+[fifteen_miles]: ./doc/Fifteen_Miles.png "Running fifteen miles without issues"
 
 ### Goals
 In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 50 m/s^3.
+
+### Result
+The car was able to drive more than 15 miles without incidents with an average speed > 45mph.
+Here is a screenshot of the Planner running 15 miles without issues.
+
+![][fifteen_miles]
+
+
+### Implementation
+
+#### Path Planning
+The main steps of this project are the following:
+* Using sensor fusion to get information about own/other cars (this is provided by the simulator here)
+* Brake if you get near a car in the same lane and you cannot find another path
+* Using the cost function to get best target lane
+* Trajectory generation for this lane
+
+#### Costs
+Based on the cost functions the target lane is selected.
+* `costDistance`: Based on the distance of the cars in front of the own car
+* `costCollision`: Possible collisions on all lanes
+* `costLaneShift`: Penalize lane shifts, especially two lane shifts 
+
+There a lot of other cost functions possible, like considering the other cars speeds and accelerations, the previous lane shift, prefer the mid lane,... 
+
+#### Trajectory Generation
+Is based on the walkthrough video and the spline library. I cleaned the code and used it in `PathPlanner::generatePath()` function. Points from the previous path plus lane dependent points are used to fit the spline and generate the path.
+
+#### Violations
+In some cases I have seen a violation. This was either when just in front of the own car another car was changing langes or a jerk violation during a two lane shift.
+
+#### Video
+A short video with a simple and double lane shift can be found here:
+ https://youtu.be/_wS9AwQ07gk
+
+
+#### Class Structure
+Instead of using only one main file, 
+```
+Vehicle class: Own and other cars information are stored here
+
+Road class: Waypoint data and functions  
+
+PathPlanner class: The core path planner using the Vehicle and Road class. Calculating the costs of each lane and finding the best path 
+```
+
+### Simulator.
+You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
 
 #### The map of the highway is in data/highway_map.txt
 Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoint's map coordinate position, the s value is the distance along the road to get to that waypoint in meters, the dx and dy values define the unit normal vector pointing outward of the highway loop.
