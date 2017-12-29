@@ -13,14 +13,14 @@ using json = nlohmann::json;
 class PathPlanner
 {
 public:
-  PathPlanner();
   PathPlanner(Road r);
   std::vector<double> x_path() { return _x_path; };
   std::vector<double> y_path() { return _y_path; };
   void update(json data);
   void generatePath(int lane); 
   void costCars(const Vehicle& v);
-  double costCollision(const Vehicle& v);
+  void costCollision(const Vehicle& v);
+  void costDistance(const Vehicle& v);
   void costLaneShift();
   int bestLane();
 

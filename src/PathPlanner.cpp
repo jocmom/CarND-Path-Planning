@@ -8,11 +8,6 @@
 
 using namespace std;
 
-PathPlanner::PathPlanner() : car(-1), ref_v(0), costs(LANE_CNT, 0)
-{
-  road = Road();
-}
-
 PathPlanner::PathPlanner(Road r) : car(-1), road(r), ref_v(0), costs(LANE_CNT, 0)
 {
 }
@@ -74,7 +69,7 @@ void PathPlanner::update(json data)
         too_close = true;
         if(car.speed() > v.speed() * MPS2MPH)
         {
-          this->ref_v -= MAX_V_DELTA; // * (1 - distance / MIN_DISTANCE);
+          this->ref_v -= MAX_V_DELTA * (1 - distance * distance / (MIN_DISTANCE * MIN_DISTANCE));
         }
       }
     }
@@ -182,38 +177,57 @@ void PathPlanner::costCars(const Vehicle &v)
   if(lane > LANE_CNT) {
     return;
   }
-
-  costs[lane] += costCollision(v);
+  costDistance(v);
+  costCollision(v);
   return;
 }
 
-double PathPlanner::costCollision(const Vehicle &v)
+void PathPlanner::costDistance(const Vehicle &v)
 {
+  int lane = v.lane();
   double distance = v.s() - car.s();
-  // cars behind car 
-  if( distance > -CAR_SIZE && distance < 0 ) {
-    if(v.lane() == car.lane()) {
-      return 0.1;
-    }
-    return 0.5;
-  }
   // cars in front of car (near)
-  if( distance >= 0 && distance < MIN_DISTANCE ) {
-    return 1.;
-  }
+  // if( distance >= 0 && distance < MIN_DISTANCE ) {
+  //   return 0.8;
+  // }
   // cars in front of car (far)
   if( distance >= 0 && distance < OPTIMAL_DISTANCE ) {
-    return 0.3;
+    costs[lane] += (1. - distance / OPTIMAL_DISTANCE);
   }
-  return 0.;
+}
+
+void PathPlanner::costCollision(const Vehicle &v)
+{
+  int lane = v.lane();
+  int lane_diff = abs(lane - car.lane());
+  double distance = v.s() - car.s();
+  // cars behind or next to car 
+  if( distance > -CAR_SIZE && distance < CAR_SIZE) {
+    if(lane == car.lane()) {
+      costs[lane] += 0.1;
+    }
+    // car is in middle lane 
+    else if(car.lane() == 1) {
+      costs[lane] += 1.;
+    }
+    // car is in outer lane
+    else {
+      costs[lane] += 1.;
+      // and blocking car in mid lane -> increase costs
+      // for other outer lane
+      if(lane == 1) {
+        costs[(car.lane()+1)%LANE_CNT] += 1.;
+      }
+    }
+  }
 }
 
 void PathPlanner::costLaneShift() 
 {
   for(int lane=0; lane<LANE_CNT; ++lane) {
     if(lane == car.lane()) costs[lane] += 0.;
-    else if(abs(lane - car.lane()) == 1) costs[lane] += 0.5;
-    else costs[lane] += 1.;
+    else if(abs(lane - car.lane()) == 1) costs[lane] += 0.3;
+    else costs[lane] += 0.7;
   }
 }
 
@@ -230,4 +244,4 @@ int PathPlanner::bestLane()
   return target_lane;
 }
 
-// costSpeed, costCarsOnLaneCount
+// costSpeed, costCarsOnLaneCount, costPreferMidLane
